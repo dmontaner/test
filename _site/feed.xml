@@ -1,0 +1,250 @@
+<?xml version="1.0" encoding="utf-8"?><?xml-stylesheet type="text/xml" href="http://localhost:4000/feed.xslt.xml"?><feed xmlns="http://www.w3.org/2005/Atom"><generator uri="http://jekyllrb.com" version="3.4.0">Jekyll</generator><link href="http://localhost:4000/feed.xml" rel="self" type="application/atom+xml" /><link href="http://localhost:4000/" rel="alternate" type="text/html" /><updated>2017-02-12T00:25:46+00:00</updated><id>http://localhost:4000//</id><title type="html">Road of Excess</title><subtitle>a data science blog</subtitle><entry><title type="html">Template</title><link href="http://localhost:4000/template/" rel="alternate" type="text/html" title="Template" /><published>2017-02-01T00:00:00+00:00</published><updated>2017-02-01T00:00:00+00:00</updated><id>http://localhost:4000/template</id><content type="html" xml:base="http://localhost:4000/template/">&lt;p&gt;Just a template page&lt;/p&gt;</content><category term="R" /><category term="web" /><summary type="html">short template.</summary></entry><entry><title type="html">Finding Urls Used In R Packages</title><link href="http://localhost:4000/finding-urls-used-in-r-packages/" rel="alternate" type="text/html" title="Finding Urls Used In R Packages" /><published>2016-07-28T00:00:00+01:00</published><updated>2016-07-28T00:00:00+01:00</updated><id>http://localhost:4000/finding-urls-used-in-r-packages</id><content type="html" xml:base="http://localhost:4000/finding-urls-used-in-r-packages/">&lt;!--
+http://stackoverflow.com/questions/4962495/where-to-find-free-public-web-services
+--&gt;
+
+&lt;p&gt;Many R libraries query web services for information.
+Sometimes the purpose is to download the complete dataset to be analyzed.
+In other occasions we just need to add some extra bits to the data we are exploring.
+Packages like &lt;a href=&quot;https://cran.rstudio.com/web/packages/RStripe/index.html&quot; title=&quot;RStripe: A Convenience Interface for the Stripe Payment API&quot;&gt;RStripe&lt;/a&gt; and &lt;a href=&quot;https://cran.r-project.org/web/packages/tumblR/index.html&quot; title=&quot;tumblR: Access to Tumblr v2 API&quot;&gt;tumblR&lt;/a&gt; in &lt;a href=&quot;https://cran.r-project.org&quot; title=&quot;The Comprehensive R Archive Network&quot;&gt;CRAN&lt;/a&gt;
+or &lt;a href=&quot;http://bioconductor.org/packages/release/bioc/html/biomaRt.html&quot; title=&quot;Interface to BioMart databases (e.g. Ensembl, COSMIC, Wormbase and Gramene)&quot;&gt;biomaRt&lt;/a&gt; in &lt;a href=&quot;http://bioconductor.org&quot; title=&quot;Bioconductor provides tools for the analysis and comprehension of high-throughput genomic data.&quot;&gt;Bioconductor&lt;/a&gt;
+perform such queries.&lt;/p&gt;
+
+&lt;p&gt;Usually,
+this kind of packages use the R library &lt;a href=&quot;https://cran.r-project.org/web/packages/RCurl/index.html&quot; title=&quot;RCurl: General Network (HTTP/FTP/...) Client Interface for R&quot;&gt;RCurl&lt;/a&gt; 
+(or some alternative such as &lt;a href=&quot;https://cran.r-project.org/web/packages/curl/index.html&quot; title=&quot;curl: A Modern and Flexible Web Client for R&quot;&gt;curl&lt;/a&gt;) 
+to connect to the specific web service and get the required data.
+Generally,
+some function in the package
+composes a URL following the web API specification, 
+and then, &lt;code class=&quot;highlighter-rouge&quot;&gt;RCurl::getURL&lt;/code&gt; is called over this URL to retrieve the data into the R session.&lt;/p&gt;
+
+&lt;p&gt;Getting to know such URLs is generally valuable as it can be used for
+testing, debugging, understanding how the API works, or simply to use it with some other software.
+Nevertheless, most of such libraries build the URLs internally 
+and do not make them available to the end user.&lt;/p&gt;
+
+&lt;p&gt;Occasionally I like to &lt;strong&gt;rebuild&lt;/strong&gt; one of such packages
+for the URLs to be printed when the web service is called. 
+Few days ago I did so with the &lt;a href=&quot;https://cran.r-project.org/web/packages/Rlabkey/index.html&quot; title=&quot;Rlabkey: Data Exchange Between R and LabKey Server&quot;&gt;Rlabkey&lt;/a&gt; library 
+and I would like to share here how I did it as it may be useful for some of you:&lt;/p&gt;
+
+&lt;ol&gt;
+  &lt;li&gt;
+    &lt;p&gt;I cloned the library from its &lt;a href=&quot;https://github.com/LabKey/labkey-api-r&quot;&gt;Github repository&lt;/a&gt;
+but you could also download the source code from &lt;a href=&quot;https://cran.r-project.org&quot; title=&quot;The Comprehensive R Archive Network&quot;&gt;CRAN&lt;/a&gt; or &lt;a href=&quot;http://bioconductor.org&quot; title=&quot;Bioconductor provides tools for the analysis and comprehension of high-throughput genomic data.&quot;&gt;Bioconductor&lt;/a&gt;.&lt;/p&gt;
+  &lt;/li&gt;
+  &lt;li&gt;
+    &lt;p&gt;I explored the &lt;a href=&quot;https://github.com/LabKey/labkey-api-r/blob/develop/Rlabkey/DESCRIPTION&quot;&gt;DESCRIPTION&lt;/a&gt; file
+and found out that &lt;a href=&quot;https://cran.r-project.org/web/packages/Rlabkey/index.html&quot; title=&quot;Rlabkey: Data Exchange Between R and LabKey Server&quot;&gt;Rlabkey&lt;/a&gt; uses &lt;a href=&quot;https://cran.r-project.org/web/packages/RCurl/index.html&quot; title=&quot;RCurl: General Network (HTTP/FTP/...) Client Interface for R&quot;&gt;RCurl&lt;/a&gt;.
+In this case it is indicated in the &lt;em&gt;Depends&lt;/em&gt; row of the DESCRIPTION file, 
+but for some other libraries it will usually be in the &lt;em&gt;Imports&lt;/em&gt; 
+or even in the &lt;em&gt;Suggests&lt;/em&gt; one.&lt;/p&gt;
+  &lt;/li&gt;
+  &lt;li&gt;
+    &lt;p&gt;I went to the &lt;a href=&quot;https://github.com/LabKey/labkey-api-r/tree/develop/Rlabkey/R&quot;&gt;R&lt;/a&gt; folder
+where the R code leaves,
+and searched for scripts with the word &lt;code class=&quot;highlighter-rouge&quot;&gt;getURL&lt;/code&gt;
+(actually &lt;a href=&quot;https://cran.r-project.org/web/packages/Rlabkey/index.html&quot; title=&quot;Rlabkey: Data Exchange Between R and LabKey Server&quot;&gt;Rlabkey&lt;/a&gt; uses &lt;code class=&quot;highlighter-rouge&quot;&gt;getURI&lt;/code&gt; which is a synonym of &lt;code class=&quot;highlighter-rouge&quot;&gt;getURL&lt;/code&gt;).
+I used the Linux Shell command
+&lt;a href=&quot;http://linuxcommand.org/man_pages/grep.html&quot;&gt;grep&lt;/a&gt;
+but any other method will do…
+even &lt;a href=&quot;https://github.com/LabKey/labkey-api-r/search?utf8=✓&amp;amp;q=getURI&amp;amp;type=Code&quot;&gt;searching in Gighub&lt;/a&gt;.&lt;/p&gt;
+  &lt;/li&gt;
+  &lt;li&gt;
+    &lt;p&gt;I found out that the call to &lt;code class=&quot;highlighter-rouge&quot;&gt;getURI&lt;/code&gt; is done by the
+&lt;a href=&quot;https://github.com/LabKey/labkey-api-r/blob/6f0983f5d460ffbe2014bfe87e5c07cc058d29e9/Rlabkey/R/labkey.defaults.R#L51&quot;&gt;labkey.get&lt;/a&gt;
+function in the  &lt;a href=&quot;https://cran.r-project.org/web/packages/Rlabkey/index.html&quot; title=&quot;Rlabkey: Data Exchange Between R and LabKey Server&quot;&gt;Rlabkey&lt;/a&gt; library, 
+and that the function takes the desired URL as an input parameter.
+Then I just added a &lt;code class=&quot;highlighter-rouge&quot;&gt;print&lt;/code&gt; at the beginning of the function.&lt;/p&gt;
+  &lt;/li&gt;
+  &lt;li&gt;
+    &lt;p&gt;I reinstalled the library from my local copy using:&lt;br /&gt;
+&lt;code class=&quot;highlighter-rouge&quot;&gt;install.packages (&quot;labkey-api-r/Rlabkey&quot;, repos = NULL)&lt;/code&gt;&lt;/p&gt;
+  &lt;/li&gt;
+&lt;/ol&gt;
+
+&lt;p&gt;&lt;a href=&quot;https://github.com/dmontaner/labkey-api-r/commit/fd57e1d73782e1c579338da306ab0258ea4f1ffb&quot;&gt;Here&lt;/a&gt;
+you can find the git commit adding the &lt;code class=&quot;highlighter-rouge&quot;&gt;print&lt;/code&gt; line.&lt;/p&gt;
+
+&lt;h2 id=&quot;hidden-curl-calls&quot;&gt;Hidden curl calls&lt;/h2&gt;
+
+&lt;p&gt;Many web services yield &lt;strong&gt;JSON&lt;/strong&gt; formatted results.
+Usually those are read into R &lt;em&gt;lists&lt;/em&gt; or &lt;em&gt;data.frames&lt;/em&gt;
+using functions like &lt;code class=&quot;highlighter-rouge&quot;&gt;fromJSON&lt;/code&gt; implemented in the &lt;a href=&quot;https://cran.rstudio.com/web/packages/jsonlite/index.html&quot; title=&quot;jsonlite: A Robust, High Performance JSON Parser and Generator for R&quot;&gt;jsonlite&lt;/a&gt; library.
+Such functions can read from a text file but also from a web connection;
+for example &lt;code class=&quot;highlighter-rouge&quot;&gt;fromJSON&lt;/code&gt; internally calls &lt;code class=&quot;highlighter-rouge&quot;&gt;RCurl::getURL&lt;/code&gt; to read from a URL.&lt;/p&gt;
+
+&lt;p&gt;Thus, when looking for the URL as I did above,
+you may sometimes need to search for the &lt;code class=&quot;highlighter-rouge&quot;&gt;fromJSON&lt;/code&gt; or similar functions.&lt;/p&gt;
+
+&lt;p&gt;The same can happen with serviced returning &lt;strong&gt;XML&lt;/strong&gt; format.
+Functions like
+may be then used to find where the URL is called so that it can be printed for you.&lt;/p&gt;</content><category term="R" /><category term="web services" /><category term="API" /><category term="JSON" /><category term="XML" /><summary type="html">How to figure out URLs internally used in some R packages</summary></entry><entry><title type="html">Finding R data.frame clas for all columns</title><link href="http://localhost:4000/articles/find-r-dataframe-column-classes/" rel="alternate" type="text/html" title="Finding R data.frame clas for all columns" /><published>2016-01-01T00:00:00+00:00</published><updated>2016-01-01T00:00:00+00:00</updated><id>http://localhost:4000/articles/find-r-dataframe-column-classes</id><content type="html" xml:base="http://localhost:4000/articles/find-r-dataframe-column-classes/">&lt;p&gt;Data&lt;/p&gt;
+
+&lt;p&gt;Sin R&lt;/p&gt;
+
+&lt;div class=&quot;highlighter-rouge&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;datos &amp;lt;- data.frame (my.integer =  1:10, my.numeric = .5:10, my.logical =  TRUE, my.factor  = &quot;I am a Level&quot;)
+&lt;/code&gt;&lt;/pre&gt;
+&lt;/div&gt;
+
+&lt;div class=&quot;language-r highlighter-rouge&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;&lt;span class=&quot;n&quot;&gt;datos&lt;/span&gt;&lt;span class=&quot;w&quot;&gt; &lt;/span&gt;&lt;span class=&quot;o&quot;&gt;&amp;lt;-&lt;/span&gt;&lt;span class=&quot;w&quot;&gt; &lt;/span&gt;&lt;span class=&quot;n&quot;&gt;data.frame&lt;/span&gt;&lt;span class=&quot;w&quot;&gt; &lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;my.integer&lt;/span&gt;&lt;span class=&quot;w&quot;&gt; &lt;/span&gt;&lt;span class=&quot;o&quot;&gt;=&lt;/span&gt;&lt;span class=&quot;w&quot;&gt;  &lt;/span&gt;&lt;span class=&quot;m&quot;&gt;1&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;:&lt;/span&gt;&lt;span class=&quot;m&quot;&gt;10&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt;&lt;span class=&quot;w&quot;&gt; &lt;/span&gt;&lt;span class=&quot;n&quot;&gt;my.numeric&lt;/span&gt;&lt;span class=&quot;w&quot;&gt; &lt;/span&gt;&lt;span class=&quot;o&quot;&gt;=&lt;/span&gt;&lt;span class=&quot;w&quot;&gt; &lt;/span&gt;&lt;span class=&quot;m&quot;&gt;.5&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;:&lt;/span&gt;&lt;span class=&quot;m&quot;&gt;10&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt;&lt;span class=&quot;w&quot;&gt; &lt;/span&gt;&lt;span class=&quot;n&quot;&gt;my.logical&lt;/span&gt;&lt;span class=&quot;w&quot;&gt; &lt;/span&gt;&lt;span class=&quot;o&quot;&gt;=&lt;/span&gt;&lt;span class=&quot;w&quot;&gt;  &lt;/span&gt;&lt;span class=&quot;kc&quot;&gt;TRUE&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt;&lt;span class=&quot;w&quot;&gt; &lt;/span&gt;&lt;span class=&quot;n&quot;&gt;my.factor&lt;/span&gt;&lt;span class=&quot;w&quot;&gt;  &lt;/span&gt;&lt;span class=&quot;o&quot;&gt;=&lt;/span&gt;&lt;span class=&quot;w&quot;&gt; &lt;/span&gt;&lt;span class=&quot;s2&quot;&gt;&quot;I am a Level&quot;&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt;&lt;span class=&quot;w&quot;&gt;
+&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;
+&lt;/div&gt;
+
+&lt;p&gt;cosa&lt;/p&gt;
+
+&lt;div class=&quot;language-r highlighter-rouge&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;&lt;span class=&quot;n&quot;&gt;datos&lt;/span&gt;&lt;span class=&quot;w&quot;&gt; &lt;/span&gt;&lt;span class=&quot;o&quot;&gt;&amp;lt;-&lt;/span&gt;&lt;span class=&quot;w&quot;&gt; &lt;/span&gt;&lt;span class=&quot;n&quot;&gt;data.frame&lt;/span&gt;&lt;span class=&quot;w&quot;&gt; &lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;my.integer&lt;/span&gt;&lt;span class=&quot;w&quot;&gt; &lt;/span&gt;&lt;span class=&quot;o&quot;&gt;=&lt;/span&gt;&lt;span class=&quot;w&quot;&gt;  &lt;/span&gt;&lt;span class=&quot;m&quot;&gt;1&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;:&lt;/span&gt;&lt;span class=&quot;m&quot;&gt;10&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt;&lt;span class=&quot;w&quot;&gt;
+                     &lt;/span&gt;&lt;span class=&quot;n&quot;&gt;my.numeric&lt;/span&gt;&lt;span class=&quot;w&quot;&gt; &lt;/span&gt;&lt;span class=&quot;o&quot;&gt;=&lt;/span&gt;&lt;span class=&quot;w&quot;&gt; &lt;/span&gt;&lt;span class=&quot;m&quot;&gt;.5&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;:&lt;/span&gt;&lt;span class=&quot;m&quot;&gt;10&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt;&lt;span class=&quot;w&quot;&gt;
+                     &lt;/span&gt;&lt;span class=&quot;n&quot;&gt;my.logical&lt;/span&gt;&lt;span class=&quot;w&quot;&gt; &lt;/span&gt;&lt;span class=&quot;o&quot;&gt;=&lt;/span&gt;&lt;span class=&quot;w&quot;&gt;  &lt;/span&gt;&lt;span class=&quot;kc&quot;&gt;TRUE&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt;&lt;span class=&quot;w&quot;&gt;
+                     &lt;/span&gt;&lt;span class=&quot;n&quot;&gt;my.factor&lt;/span&gt;&lt;span class=&quot;w&quot;&gt;  &lt;/span&gt;&lt;span class=&quot;o&quot;&gt;=&lt;/span&gt;&lt;span class=&quot;w&quot;&gt; &lt;/span&gt;&lt;span class=&quot;s2&quot;&gt;&quot;I am a Level&quot;&lt;/span&gt;&lt;span class=&quot;w&quot;&gt;
+                     &lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt;&lt;span class=&quot;w&quot;&gt;
+&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;
+&lt;/div&gt;
+
+&lt;p&gt;Genearall you can figure out the class of each column doing:&lt;/p&gt;
+
+&lt;div class=&quot;language-r highlighter-rouge&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;&lt;span class=&quot;n&quot;&gt;sapply&lt;/span&gt;&lt;span class=&quot;w&quot;&gt; &lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;datos&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt;&lt;span class=&quot;w&quot;&gt; &lt;/span&gt;&lt;span class=&quot;n&quot;&gt;class&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt;&lt;span class=&quot;w&quot;&gt;
+&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;
+&lt;/div&gt;
+
+&lt;div class=&quot;highlighter-rouge&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;## my.integer my.numeric my.logical  my.factor 
+##  &quot;integer&quot;  &quot;numeric&quot;  &quot;logical&quot;   &quot;factor&quot;
+&lt;/code&gt;&lt;/pre&gt;
+&lt;/div&gt;
+
+&lt;p&gt;Notice that by default &lt;code class=&quot;highlighter-rouge&quot;&gt;data.frame&lt;/code&gt; creates “factor” variables from &lt;em&gt;text strings&lt;/em&gt; you can
+modify this patern setting &lt;code class=&quot;highlighter-rouge&quot;&gt;stringsAsFactors = FALSE&lt;/code&gt; in the data.frame function.
+Or direclty including the text into a new (unammed) column&lt;/p&gt;
+
+&lt;div class=&quot;language-r highlighter-rouge&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;&lt;span class=&quot;n&quot;&gt;datos&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;[,&lt;/span&gt;&lt;span class=&quot;s1&quot;&gt;'my.character'&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;]&lt;/span&gt;&lt;span class=&quot;w&quot;&gt; &lt;/span&gt;&lt;span class=&quot;o&quot;&gt;&amp;lt;-&lt;/span&gt;&lt;span class=&quot;w&quot;&gt; &lt;/span&gt;&lt;span class=&quot;s2&quot;&gt;&quot;txt&quot;&lt;/span&gt;&lt;span class=&quot;w&quot;&gt;
+&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;
+&lt;/div&gt;
+
+&lt;p&gt;Same works for Dates&lt;/p&gt;
+
+&lt;div class=&quot;language-r highlighter-rouge&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;&lt;span class=&quot;n&quot;&gt;datos&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;[,&lt;/span&gt;&lt;span class=&quot;s1&quot;&gt;'todat'&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;]&lt;/span&gt;&lt;span class=&quot;w&quot;&gt; &lt;/span&gt;&lt;span class=&quot;o&quot;&gt;&amp;lt;-&lt;/span&gt;&lt;span class=&quot;w&quot;&gt;  &lt;/span&gt;&lt;span class=&quot;n&quot;&gt;as.Date&lt;/span&gt;&lt;span class=&quot;w&quot;&gt; &lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;s2&quot;&gt;&quot;2016-11-07&quot;&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt;&lt;span class=&quot;w&quot;&gt;
+&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;
+&lt;/div&gt;
+
+&lt;p&gt;and is nice to be able to have the result in a vector for instance to select columns acording to their clases 
+select non character columns&lt;/p&gt;
+
+&lt;div class=&quot;language-r highlighter-rouge&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;&lt;span class=&quot;n&quot;&gt;cols.to.use&lt;/span&gt;&lt;span class=&quot;w&quot;&gt; &lt;/span&gt;&lt;span class=&quot;o&quot;&gt;&amp;lt;-&lt;/span&gt;&lt;span class=&quot;w&quot;&gt; &lt;/span&gt;&lt;span class=&quot;n&quot;&gt;sapply&lt;/span&gt;&lt;span class=&quot;w&quot;&gt; &lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;datos&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt;&lt;span class=&quot;w&quot;&gt; &lt;/span&gt;&lt;span class=&quot;n&quot;&gt;class&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt;&lt;span class=&quot;w&quot;&gt; &lt;/span&gt;&lt;span class=&quot;o&quot;&gt;!=&lt;/span&gt;&lt;span class=&quot;w&quot;&gt; &lt;/span&gt;&lt;span class=&quot;s2&quot;&gt;&quot;character&quot;&lt;/span&gt;&lt;span class=&quot;w&quot;&gt;
+&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;datos&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;[,&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;cols.to.use&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;]&lt;/span&gt;&lt;span class=&quot;w&quot;&gt;
+&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;
+&lt;/div&gt;
+
+&lt;div class=&quot;highlighter-rouge&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;##    my.integer my.numeric my.logical    my.factor      todat
+## 1           1        0.5       TRUE I am a Level 2016-11-07
+## 2           2        1.5       TRUE I am a Level 2016-11-07
+## 3           3        2.5       TRUE I am a Level 2016-11-07
+## 4           4        3.5       TRUE I am a Level 2016-11-07
+## 5           5        4.5       TRUE I am a Level 2016-11-07
+## 6           6        5.5       TRUE I am a Level 2016-11-07
+## 7           7        6.5       TRUE I am a Level 2016-11-07
+## 8           8        7.5       TRUE I am a Level 2016-11-07
+## 9           9        8.5       TRUE I am a Level 2016-11-07
+## 10         10        9.5       TRUE I am a Level 2016-11-07
+&lt;/code&gt;&lt;/pre&gt;
+&lt;/div&gt;
+
+&lt;p&gt;one class I use a lot and that breacks this patter are date time clases&lt;/p&gt;
+
+&lt;div class=&quot;language-r highlighter-rouge&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;&lt;span class=&quot;n&quot;&gt;datos&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;[,&lt;/span&gt;&lt;span class=&quot;s1&quot;&gt;'my.time'&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;]&lt;/span&gt;&lt;span class=&quot;w&quot;&gt; &lt;/span&gt;&lt;span class=&quot;o&quot;&gt;&amp;lt;-&lt;/span&gt;&lt;span class=&quot;w&quot;&gt; &lt;/span&gt;&lt;span class=&quot;n&quot;&gt;Sys.time&lt;/span&gt;&lt;span class=&quot;w&quot;&gt; &lt;/span&gt;&lt;span class=&quot;p&quot;&gt;()&lt;/span&gt;&lt;span class=&quot;w&quot;&gt;
+&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;datos&lt;/span&gt;&lt;span class=&quot;w&quot;&gt;
+&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;
+&lt;/div&gt;
+
+&lt;div class=&quot;highlighter-rouge&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;##    my.integer my.numeric my.logical    my.factor my.character      todat
+## 1           1        0.5       TRUE I am a Level          txt 2016-11-07
+## 2           2        1.5       TRUE I am a Level          txt 2016-11-07
+## 3           3        2.5       TRUE I am a Level          txt 2016-11-07
+## 4           4        3.5       TRUE I am a Level          txt 2016-11-07
+## 5           5        4.5       TRUE I am a Level          txt 2016-11-07
+## 6           6        5.5       TRUE I am a Level          txt 2016-11-07
+## 7           7        6.5       TRUE I am a Level          txt 2016-11-07
+## 8           8        7.5       TRUE I am a Level          txt 2016-11-07
+## 9           9        8.5       TRUE I am a Level          txt 2016-11-07
+## 10         10        9.5       TRUE I am a Level          txt 2016-11-07
+##                my.time
+## 1  2016-11-07 12:35:10
+## 2  2016-11-07 12:35:10
+## 3  2016-11-07 12:35:10
+## 4  2016-11-07 12:35:10
+## 5  2016-11-07 12:35:10
+## 6  2016-11-07 12:35:10
+## 7  2016-11-07 12:35:10
+## 8  2016-11-07 12:35:10
+## 9  2016-11-07 12:35:10
+## 10 2016-11-07 12:35:10
+&lt;/code&gt;&lt;/pre&gt;
+&lt;/div&gt;
+
+&lt;p&gt;because&lt;/p&gt;
+
+&lt;div class=&quot;language-r highlighter-rouge&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;&lt;span class=&quot;n&quot;&gt;class&lt;/span&gt;&lt;span class=&quot;w&quot;&gt; &lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;Sys.time&lt;/span&gt;&lt;span class=&quot;w&quot;&gt; &lt;/span&gt;&lt;span class=&quot;p&quot;&gt;())&lt;/span&gt;&lt;span class=&quot;w&quot;&gt;
+&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;
+&lt;/div&gt;
+
+&lt;div class=&quot;highlighter-rouge&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;## [1] &quot;POSIXct&quot; &quot;POSIXt&quot;
+&lt;/code&gt;&lt;/pre&gt;
+&lt;/div&gt;
+
+&lt;p&gt;returns two values:
+And thus sapply cannot &lt;em&gt;simplify&lt;/em&gt; the resulting list&lt;/p&gt;
+
+&lt;div class=&quot;language-r highlighter-rouge&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;&lt;span class=&quot;n&quot;&gt;sapply&lt;/span&gt;&lt;span class=&quot;w&quot;&gt; &lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;datos&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt;&lt;span class=&quot;w&quot;&gt; &lt;/span&gt;&lt;span class=&quot;n&quot;&gt;class&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt;&lt;span class=&quot;w&quot;&gt;
+&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;
+&lt;/div&gt;
+
+&lt;div class=&quot;highlighter-rouge&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;## $my.integer
+## [1] &quot;integer&quot;
+## 
+## $my.numeric
+## [1] &quot;numeric&quot;
+## 
+## $my.logical
+## [1] &quot;logical&quot;
+## 
+## $my.factor
+## [1] &quot;factor&quot;
+## 
+## $my.character
+## [1] &quot;character&quot;
+## 
+## $todat
+## [1] &quot;Date&quot;
+## 
+## $my.time
+## [1] &quot;POSIXct&quot; &quot;POSIXt&quot;
+&lt;/code&gt;&lt;/pre&gt;
+&lt;/div&gt;
+
+&lt;p&gt;In this cases or if I am programing a library or a general function.
+I usually use a double *apply to get a nice &lt;em&gt;simplified&lt;/em&gt; vector:&lt;/p&gt;
+
+&lt;div class=&quot;language-r highlighter-rouge&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;&lt;span class=&quot;n&quot;&gt;sapply&lt;/span&gt;&lt;span class=&quot;w&quot;&gt; &lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;lapply&lt;/span&gt;&lt;span class=&quot;w&quot;&gt; &lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;datos&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt;&lt;span class=&quot;w&quot;&gt; &lt;/span&gt;&lt;span class=&quot;n&quot;&gt;class&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;),&lt;/span&gt;&lt;span class=&quot;w&quot;&gt; &lt;/span&gt;&lt;span class=&quot;s2&quot;&gt;&quot;[&quot;&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt;&lt;span class=&quot;w&quot;&gt; &lt;/span&gt;&lt;span class=&quot;m&quot;&gt;1&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt;&lt;span class=&quot;w&quot;&gt;
+&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;
+&lt;/div&gt;
+
+&lt;div class=&quot;highlighter-rouge&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;##   my.integer   my.numeric   my.logical    my.factor my.character 
+##    &quot;integer&quot;    &quot;numeric&quot;    &quot;logical&quot;     &quot;factor&quot;  &quot;character&quot; 
+##        todat      my.time 
+##       &quot;Date&quot;    &quot;POSIXct&quot;
+&lt;/code&gt;&lt;/pre&gt;
+&lt;/div&gt;
+
+&lt;p&gt;thus, the &lt;em&gt;internal&lt;/em&gt; lapply gets the class list and the external ‘sapply’ retrieves just the first component of each of the vectos in the list
+ie the “POSIXct” form the &lt;code class=&quot;highlighter-rouge&quot;&gt;c (&quot;POSIXct&quot; &quot;POSIXt&quot;)&lt;/code&gt;
+and I cann keep selecting my columns as before&lt;/p&gt;
+
+&lt;div class=&quot;language-r highlighter-rouge&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;&lt;span class=&quot;n&quot;&gt;sapply&lt;/span&gt;&lt;span class=&quot;w&quot;&gt; &lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;lapply&lt;/span&gt;&lt;span class=&quot;w&quot;&gt; &lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;datos&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt;&lt;span class=&quot;w&quot;&gt; &lt;/span&gt;&lt;span class=&quot;n&quot;&gt;class&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;),&lt;/span&gt;&lt;span class=&quot;w&quot;&gt; &lt;/span&gt;&lt;span class=&quot;s2&quot;&gt;&quot;[&quot;&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt;&lt;span class=&quot;w&quot;&gt; &lt;/span&gt;&lt;span class=&quot;m&quot;&gt;1&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt;&lt;span class=&quot;w&quot;&gt; &lt;/span&gt;&lt;span class=&quot;o&quot;&gt;==&lt;/span&gt;&lt;span class=&quot;w&quot;&gt;  &lt;/span&gt;&lt;span class=&quot;s2&quot;&gt;&quot;POSIXct&quot;&lt;/span&gt;&lt;span class=&quot;w&quot;&gt; 
+&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;
+&lt;/div&gt;
+
+&lt;div class=&quot;highlighter-rouge&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;##   my.integer   my.numeric   my.logical    my.factor my.character 
+##        FALSE        FALSE        FALSE        FALSE        FALSE 
+##        todat      my.time 
+##        FALSE         TRUE
+&lt;/code&gt;&lt;/pre&gt;
+&lt;/div&gt;</content><category term="R" /><category term="DataAnalysis" /><summary type="html">some tricks to find...</summary></entry></feed>
