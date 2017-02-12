@@ -5,7 +5,7 @@ locale: en_US
 description: a data science blog
 logo: null
 search: true
-url: http://www.dmontaner.com/test/
+url: http://www.dmontaner.com/test
 
 # Jekyll configuration
 
